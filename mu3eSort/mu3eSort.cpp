@@ -53,6 +53,8 @@ void TreeReader::DefinePlots() {
     plot1D("hit_timestamp", ";Timestamp [8 ns];Counts", 1000, 0, 17000000);
 
     plot1D("delta_tl_p", ";#Delta t(tile - pixel) [8 ns];Counts", 200, -100, 100);
+    plot1D("delta_fb_p", ";#Delta t(fibre - pixel) [8 ns];Counts", 200, -100, 100);
+    plot1D("delta_tl_fb", ";#Delta t(tile - fibre) [8 ns];Counts", 200, -10, 10);
 
 }
 
@@ -80,18 +82,27 @@ void TreeReader::Run() {
 
 
 
+    for(int j = 0; j < tilehit_timestamp->size(); j++) {
+        double t_ts = (*tilehit_timestamp)[j]/256+((*tilehit_timestamp)[j]%256)/160.0;
+        Fill1D("tilehit_timestamp", t_ts, 1.0);
+    }
+
 
 
         for(int i = 0; i < fibremppc_timestamp->size(); i++) {
             double f_ts = (*fibremppc_timestamp)[i]/256+((*fibremppc_timestamp)[i]%256)/160.0;
             Fill1D("fibremppc_timestamp", f_ts, 1.0);
+ 
+            for(int j = 0; j < tilehit_timestamp->size(); j++) {
+                double t_ts = (*tilehit_timestamp)[j]/256+((*tilehit_timestamp)[j]%256)/160.0;
+                Fill1D("delta_tl_fb", t_ts - f_ts, 1.0);
+            }
+    
+    
+ 
+ 
         }
 
-
-        for(int j = 0; j < tilehit_timestamp->size(); j++) {
-            double t_ts = (*tilehit_timestamp)[j]/256+((*tilehit_timestamp)[j]%256)/160.0;
-            Fill1D("tilehit_timestamp", t_ts, 1.0);
-        }
 
 
         for(int k = 0; k < hit_timestamp->size(); k++) {
@@ -105,6 +116,12 @@ void TreeReader::Run() {
                 Fill1D("delta_tl_p", delta, 1.0);
             }
     
+            for(int i = 0; i < fibremppc_timestamp->size(); i++) {
+                double f_ts = (*fibremppc_timestamp)[i]/256+((*fibremppc_timestamp)[i]%256)/160.0;
+                Fill1D("delta_fb_p", f_ts - p_ts, 1.0);
+            }
+    
+
 
 
         }
