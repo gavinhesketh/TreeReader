@@ -12,6 +12,8 @@ Started June 2025
 #include <filesystem>
 #include <iostream>
 
+#include <vector>
+
 #include "TChain.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -19,6 +21,8 @@ Started June 2025
 
 using std::cout;
 using std::endl;
+using std::vector;
+
 
 class TreeReader {
 
@@ -32,6 +36,7 @@ class TreeReader {
     };
     ~TreeReader() {
         plotFile->Write();
+        cout<< "Wrote plots to " << plotFile->GetName() << endl;
         plotFile->Close();
         delete plotFile;
         delete tree;
@@ -52,15 +57,15 @@ void Enable(TString name, VAR& var) {
     tree->SetBranchAddress(name, &var);
 }
   
-    inline void plot1D(TString name, int nbins, float xlow, float xhigh, TString xtitle, TString ytitle){
-        plots1D.push_back(plot1DMaker(name, nbins, xlow, xhigh, xtitle, ytitle));
+    inline void plot1D(TString name, TString title, int nbins, float xlow, float xhigh){
+        plots1D.push_back(plot1DMaker(name, title, nbins, xlow, xhigh));
       }
 
-    TH1 * plot1DMaker(TString name, int nbins, float xlow, float xhigh, TString xtitle, TString ytitle);
-inline void plot2D(TString name, int xnbins, float xlow, float xhigh, int ynbins, float ylow, float yhigh, TString xtitle, TString ytitle){
-        plots2D.push_back(plot2DMaker(name, xnbins, xlow, xhigh, ynbins, ylow, yhigh, xtitle, ytitle));
-      }
-      TH2 * plot2DMaker(TString name, int nbinsx, float xlow, float xhigh, int nbinsy, float ylow, float yhigh, TString xtitle, TString ytitle);
+    TH1 * plot1DMaker(TString name, TString title, int nbins, float xlow, float xhigh);
+    inline void plot2D(TString name, TString title, int xnbins, float xlow, float xhigh, int ynbins, float ylow, float yhigh){
+        plots2D.push_back(plot2DMaker(name, title, xnbins, xlow, xhigh, ynbins, ylow, yhigh));
+    }
+    TH2 * plot2DMaker(TString name, TString title, int nbinsx, float xlow, float xhigh, int nbinsy, float ylow, float yhigh);
 
       void Fill1D(TString name, double val, double weight);
       void Fill2D(TString name, double xval, double yval, double weight);
@@ -84,11 +89,23 @@ inline void plot2D(TString name, int xnbins, float xlow, float xhigh, int ynbins
   
 
 
-//branch variables
-    //example:
-    double p = 0; //example branch, replace with actual branches you need
-
-    //add more branches as needed
+   // Declaration of leaf types
+   ULong_t         frameId;
+   UInt_t          runId;
+   Int_t           Nhit;
+   vector<unsigned int> *hit_pixelid;
+   vector<unsigned int> *hit_timestamp;
+   vector<unsigned long> *debug_si_data;
+   vector<unsigned long> *debug_si_ts;
+   Int_t           Nfibremppc;
+   vector<unsigned int> *fibremppc_mppc;
+   vector<int>     *fibremppc_col;
+   vector<unsigned int> *fibremppc_timestamp;
+   Int_t           Ntilehit;
+   vector<unsigned int> *tilehit_tile;
+   vector<double>  *tilehit_time;
+   vector<double>  *tilehit_edep;
+   vector<unsigned int> *tilehit_timestamp;
 
 
 };
@@ -98,12 +115,10 @@ inline void plot2D(TString name, int xnbins, float xlow, float xhigh, int ynbins
 
 
 
-TH1 * TreeReader::plot1DMaker(TString name, int nbins, float xlow, float xhigh, TString xtitle, TString ytitle){
-    TH1 * p = new TH1D(name, name, nbins, xlow, xhigh);
+TH1 * TreeReader::plot1DMaker(TString name, TString title, int nbins, float xlow, float xhigh){
+    TH1 * p = new TH1D(name, title, nbins, xlow, xhigh);
     p->Sumw2();
-    p->SetDirectory(0);
-    p->SetXTitle(xtitle);
-    p->SetYTitle(ytitle);
+   // p->SetDirectory(0);
     p->GetXaxis()->SetLabelSize(0.04);
     p->GetYaxis()->SetLabelSize(0.04);
     p->GetXaxis()->SetTitleOffset(1.2);
@@ -118,12 +133,10 @@ TH1 * TreeReader::plot1DMaker(TString name, int nbins, float xlow, float xhigh, 
     return p;
   }
   
-  TH2 * TreeReader::plot2DMaker(TString name, int nbinsx, float xlow, float xhigh, int nbinsy, float ylow, float yhigh, TString xtitle, TString ytitle){
-    TH2 * p = new TH2D(name, name, nbinsx, xlow, xhigh, nbinsy, ylow, yhigh);
+  TH2 * TreeReader::plot2DMaker(TString name, TString title, int nbinsx, float xlow, float xhigh, int nbinsy, float ylow, float yhigh){
+    TH2 * p = new TH2D(name, title, nbinsx, xlow, xhigh, nbinsy, ylow, yhigh);
     p->Sumw2();
-    p->SetDirectory(0);
-    p->SetXTitle(xtitle);
-    p->SetYTitle(ytitle);
+  //  p->SetDirectory(0);
     p->GetXaxis()->SetLabelSize(0.04);
     p->GetYaxis()->SetLabelSize(0.04);
     p->GetXaxis()->SetTitleOffset(1.2);
@@ -173,7 +186,7 @@ int main(int argc, char* argv[]) {
     po::options_description opts("Options");
     opts.add_options()
         ("output,o", po::value(&outputName), "Output plot file name (default = inputname_plots.root)")
-        ("tree,t", po::value(&treeName)->default_value("frames"), "Tree to read")
+        ("tree,t", po::value(&treeName)->default_value("mu3e"), "Tree to read")
         ("help", "Print this help message");
 
     // define hidden args

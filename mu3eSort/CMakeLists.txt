@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(TreeReader)
+project(mu3eSort)
 
 #include debug hooks:
 #SET(CMAKE_BUILD_TYPE "Debug")
@@ -13,12 +13,12 @@ find_package(ROOT REQUIRED COMPONENTS)
 ## BOOST:
 set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost 1.74 REQUIRED COMPONENTS program_options )
-message(STATUS "[TreeReader] Boost_VERSION: ${Boost_VERSION}")
+message(STATUS "[mu3eSort] Boost_VERSION: ${Boost_VERSION}")
 
 
-add_executable(TreeReader TreeReader.cpp)
-target_link_libraries(TreeReader PUBLIC ${Boost_LIBRARIES}  ${ROOT_LIBRARIES})
-target_include_directories(TreeReader SYSTEM PUBLIC ${Boost_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS})
+add_executable(mu3eSort mu3eSort.cpp)
+target_link_libraries(mu3eSort PUBLIC ${Boost_LIBRARIES}  ${ROOT_LIBRARIES})
+target_include_directories(mu3eSort SYSTEM PUBLIC ${Boost_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS})
 
 
-install(TARGETS TreeReader DESTINATION bin)
+install(TARGETS mu3eSort DESTINATION bin)
